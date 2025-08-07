@@ -38,10 +38,12 @@ dados_plot_MPP = np.delete(dados_plot_MPP, 0, 0)
 
 awg_indice = 0
 
+#df = pd.read_csv(
+#    r'C:\Users\User\PycharmProjects\Projeto_Indutores\csv\DadosIndutor - Toroids - Copia (alterado) 01-04.csv')
+#df_awg = pd.read_csv(r'C:\Users\User\PycharmProjects\Projeto_Indutores\csv\Dados AWG.csv')
 df = pd.read_csv(
-    r'C:\Users\User\PycharmProjects\Projeto_Indutores\csv\DadosIndutor - Toroids - Copia (alterado) 01-04.csv')
-df_awg = pd.read_csv(r'C:\Users\User\PycharmProjects\Projeto_Indutores\csv\Dados AWG.csv')
-
+    r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\DadosIndutor - Toroids - Copia (alterado) 01-04.csv')
+df_awg = pd.read_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\Dados AWG.csv')
 
 for f in range(f_min, f_max, f_step):  # Varredura na frequência
     print('Valor da frequência atual: ', f)
@@ -260,37 +262,37 @@ for m in range(matrizes_plot.shape[0]):
             fig.tight_layout()
 
             if p == 2:
-                if m == 0: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Volume\KMu.pdf', dpi=600)
-                if m == 1: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Volume\KMM.pdf', dpi=600)
-                if m == 2: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Volume\KMH.pdf', dpi=600)
-                if m == 3: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Volume\Xf.pdf', dpi=600)
-                if m == 4: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Volume\HF.pdf', dpi=600)
-                if m == 5: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Volume\EDG.pdf', dpi=600)
-                if m == 6: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Volume\MPP.pdf', dpi=600)
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\MPP.pdf', dpi=600)
 
             if p == 3:
-                if m == 0: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasNucleo\KMu.pdf', dpi=600)
-                if m == 1: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasNucleo\KMM.pdf', dpi=600)
-                if m == 2: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasNucleo\KMH.pdf', dpi=600)
-                if m == 3: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasNucleo\Xf.pdf', dpi=600)
-                if m == 4: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasNucleo\HF.pdf', dpi=600)
-                if m == 5: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasNucleo\EDG.pdf', dpi=600)
-                if m == 6: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasNucleo\MPP.pdf', dpi=600)
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\MPP.pdf', dpi=600)
 
             if p == 4:
-                if m == 0: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasCobre\KMu.pdf', dpi=600)
-                if m == 1: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasCobre\KMM.pdf', dpi=600)
-                if m == 2: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasCobre\KMH.pdf', dpi=600)
-                if m == 3: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasCobre\Xf.pdf', dpi=600)
-                if m == 4: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasCobre\HF.pdf', dpi=600)
-                if m == 5: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasCobre\EDG.pdf', dpi=600)
-                if m == 6: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\PerdasCobre\MPP.pdf', dpi=600)
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\MPP.pdf', dpi=600)
 
             if p == 5:
-                if m == 0: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Temperatura\KMu.pdf', dpi=600)
-                if m == 1: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Temperatura\KMM.pdf', dpi=600)
-                if m == 2: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Temperatura\KMH.pdf', dpi=600)
-                if m == 3: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Temperatura\Xf.pdf', dpi=600)
-                if m == 4: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Temperatura\HF.pdf', dpi=600)
-                if m == 5: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Temperatura\EDG.pdf', dpi=600)
-                if m == 6: plt.savefig(r'C:\Users\User\PycharmProjects\Projeto_Indutores\Figuras\Temperatura\MPP.pdf', dpi=600)
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\MPP.pdf', dpi=600)

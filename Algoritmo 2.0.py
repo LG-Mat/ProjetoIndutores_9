@@ -21,19 +21,19 @@ D = 0.5
 temp_amb = 20
 # ===================================================================
 
-dados_plot_KMu = np.array([[0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_KMu = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
 dados_plot_KMu = np.delete(dados_plot_KMu, 0, 0)
-dados_plot_KMM = np.array([[0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_KMM = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
 dados_plot_KMM = np.delete(dados_plot_KMM, 0, 0)
-dados_plot_KMH = np.array([[0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_KMH = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
 dados_plot_KMH = np.delete(dados_plot_KMH, 0, 0)
-dados_plot_Xf = np.array([[0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_Xf = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
 dados_plot_Xf = np.delete(dados_plot_Xf, 0, 0)
-dados_plot_HF = np.array([[0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_HF = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
 dados_plot_HF = np.delete(dados_plot_HF, 0, 0)
-dados_plot_EDG = np.array([[0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_EDG = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
 dados_plot_EDG = np.delete(dados_plot_EDG, 0, 0)
-dados_plot_MPP = np.array([[0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_MPP = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
 dados_plot_MPP = np.delete(dados_plot_MPP, 0, 0)
 
 awg_indice = 0
@@ -149,14 +149,13 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                     # Temperatura no núcleo =================================================
                     area_externa = 2*np.pi*((df.values[i][20]**2 - df.values[i][21]**2)/4 + df.values[i][22]*n_empilhamento*(df.values[i][21]+df.values[i][22]))
                     area_externa = area_externa*0.0001
-                    temp_nuc = temp_amb + ((perdas_cobre + perdas_nucleo)*1000 / (area_externa))**0.833
+                    temp_nuc = temp_amb + ((perdas_cobre + perdas_nucleo) / (area_externa))**0.833
 
                     perdas_totais = perdas_cobre + perdas_nucleo
 
-                    #if df.values[i][0] == 77073:
-                        #print('frequência: ', f, '| ripple: ', r, '| AWG: ', df_awg.values[awg_indice][0], 'N inicial', N_espiras_i, '| N de espiras: ', N_espiras,
-                        #      '| N em paralelo: ', N_paralelo, '| Empilhamento: ', n_empilhamento, 'WindFactor: ', WindFactor, 'Indutância: ', L,
-                        #      'Energia ', E)
+                    #if 55000 <= df.values[i][0] < 56000:
+                    #    print('frequência: ', f, '| ripple: ', r, '| AWG: ', df_awg.values[awg_indice][0], 'N inicial', N_espiras_i, '| N de espiras: ', N_espiras,
+                    #          '| N em paralelo: ', N_paralelo, '| Empilhamento: ', n_empilhamento, 'WindFactor: ', WindFactor, 'Indutância: ', L, 'Energia ', E)
 
                     if executabilidade != 0:
                         dados = np.array(
@@ -195,6 +194,7 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                     for i in range(matriz_atual.shape[0]):
                         if matriz_atual[i][8] < menor_perdas_nucleo:
                             menor_perdas_nucleo = matriz_atual[i][8]
+                            nuc_paralelos = matriz_atual[i][13]
 
                         if matriz_atual[i][9] < menor_perdas_cobre:
                             menor_perdas_cobre = matriz_atual[i][9]
@@ -216,7 +216,7 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                                     id_n_espiras = i
 
                     data = np.array([r, f/1000, matriz_atual[id_n_espiras][5], menor_perdas_nucleo,
-                                     menor_perdas_cobre, menor_temp_nuc, menor_perdas_totais, matriz_atual[1][1]])
+                                     menor_perdas_cobre, menor_temp_nuc, menor_perdas_totais, matriz_atual[1][1], nuc_paralelos])
 
                     if 77000 <= data[7] < 78000: dados_plot_KMu = np.r_[dados_plot_KMu, [data]]
                     if 79000 <= data[7] < 80000: dados_plot_KMM = np.r_[dados_plot_KMM, [data]]
@@ -224,7 +224,10 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                     if 78000 <= data[7] < 79000: dados_plot_Xf = np.r_[dados_plot_Xf, [data]]
                     if 58000 <= data[7] < 59000: dados_plot_HF = np.r_[dados_plot_HF, [data]]
                     if 59000 <= data[7] < 60000: dados_plot_EDG = np.r_[dados_plot_EDG, [data]]
-                    if 55000 <= data[7] < 56000: dados_plot_MPP = np.r_[dados_plot_MPP, [data]]
+                    if 55000 <= data[7] < 56000:
+                        print('r: ', r, '|| f: ', f/1000, '|| Stack: ', nuc_paralelos, '|| Perdas Nuc: ', menor_perdas_cobre,
+                              '|| Perdas cobre',  menor_perdas_nucleo, '|| Temp: ', menor_temp_nuc)
+                        dados_plot_MPP = np.r_[dados_plot_MPP, [data]]
 
 matrizes_plot = np.array([dados_plot_KMu, dados_plot_KMM, dados_plot_KMH, dados_plot_Xf,
                                  dados_plot_HF, dados_plot_EDG, dados_plot_MPP], dtype=object)
@@ -241,11 +244,11 @@ for m in range(matrizes_plot.shape[0]):
             ax = fig.add_subplot(111, projection='3d')
 
             surf = ax.plot_trisurf(X, Y, Z, cmap=cm.jet, linewidth=0)
-            fig.colorbar(surf)
+            #fig.colorbar(surf)
 
-            if p == 3: ax.view_init(elev=20, azim=-135)  # perdas no nucleo
-            if p == 4 or p == 5 or p == 2: ax.view_init(elev=20, azim=45)  # perdas no cobre, temperatura, volume do núcleo
-            if p == 6: ax.view_init(elev=20, azim=135)
+            if p == 3 or p == 6: ax.view_init(elev=20, azim=-135)  # perdas no nucleo
+            if p == 4 or p == 2: ax.view_init(elev=20, azim=45)  # perdas no cobre, temperatura, volume do núcleo
+            if p == 5: ax.view_init(elev=20, azim=135)
 
             if m == 0: plt.title('Kool Mu')
             if m == 1: plt.title('Kool Mu Max')

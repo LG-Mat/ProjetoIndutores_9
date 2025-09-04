@@ -246,9 +246,9 @@ for m in range(matrizes_plot.shape[0]):
             surf = ax.plot_trisurf(X, Y, Z, cmap=cm.jet, linewidth=0)
             #fig.colorbar(surf)
 
-            if p == 3 or p == 6: ax.view_init(elev=20, azim=-135)  # perdas no nucleo
-            if p == 4 or p == 2: ax.view_init(elev=20, azim=45)  # perdas no cobre, temperatura, volume do núcleo
-            if p == 5: ax.view_init(elev=20, azim=135)
+            if p == 3: ax.view_init(elev=20, azim=-135)  # perdas no nucleo
+            if p == 4 or p == 2: ax.view_init(elev=20, azim=45)  # perdas no cobre e volume do núcleo
+            if p == 5 or p == 6: ax.view_init(elev=20, azim=135) # Temperatura e perdas totais
 
             if m == 0: plt.title('Kool Mu')
             if m == 1: plt.title('Kool Mu Max')

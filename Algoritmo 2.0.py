@@ -4,6 +4,9 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib import cm
+import matplotlib
+from matplotlib.tri import Triangulation
+from matplotlib.colors import Normalize
 
 # Parametros de entrada =============================================
 f_min = 20000
@@ -219,7 +222,7 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
 
                     data = np.array([r, f/1000, matriz_atual[id_n_espiras][5], menor_perdas_nucleo,
                                      menor_perdas_cobre, menor_temp_nuc, menor_perdas_totais, matriz_atual[1][1], matriz_atual[id_n_espiras][12]])
-
+                    #print("Voulume: ", matriz_atual[id_n_espiras][5], "Temperatura: ", matriz_atual[id_n_espiras][12], "Ripple: ", r)
                     if 77000 <= data[7] < 78000: dados_plot_KMu = np.r_[dados_plot_KMu, [data]]
                     if 79000 <= data[7] < 80000: dados_plot_KMM = np.r_[dados_plot_KMM, [data]]
                     if 76000 <= data[7] < 77000: dados_plot_KMH = np.r_[dados_plot_KMH, [data]]
@@ -234,6 +237,22 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
 matrizes_plot = np.array([dados_plot_KMu, dados_plot_KMM, dados_plot_KMH, dados_plot_Xf,
                                  dados_plot_HF, dados_plot_EDG, dados_plot_MPP], dtype=object)
 
+dataPlotKMu = pd.DataFrame(dados_plot_KMu)
+dataPlotKMM = pd.DataFrame(dados_plot_KMM)
+dataPlotKMH = pd.DataFrame(dados_plot_KMH)
+dataPlotXf = pd.DataFrame(dados_plot_Xf)
+dataPlotHF = pd.DataFrame(dados_plot_HF)
+dataPlotEDG = pd.DataFrame(dados_plot_EDG)
+dataPlotMPP = pd.DataFrame(dados_plot_MPP)
+
+dataPlotKMu.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\KMu.csv', index=False)
+dataPlotKMM.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\KMM.csv', index=False)
+dataPlotKMH.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\KMH.csv', index=False)
+dataPlotXf.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\Xf.csv', index=False)
+dataPlotHF.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\HF.csv', index=False)
+dataPlotEDG.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\EDG.csv', index=False)
+dataPlotMPP.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\MPP.csv', index=False)
+
 for m in range(matrizes_plot.shape[0]):
     plot_atual = matrizes_plot[m]
     if plot_atual.shape[0] > 3:
@@ -241,12 +260,12 @@ for m in range(matrizes_plot.shape[0]):
             X = plot_atual[:, 0]
             Y = plot_atual[:, 1]
             Z = plot_atual[:, p]
+            C = plot_atual[:, 8]
 
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
 
             surf = ax.plot_trisurf(X, Y, Z, cmap=cm.jet, linewidth=0)
-            #fig.colorbar(surf)
 
             if p == 3: ax.view_init(elev=20, azim=-135)  # perdas no nucleo
             if p == 4 or p == 2: ax.view_init(elev=20, azim=45)  # perdas no cobre e volume do núcleo

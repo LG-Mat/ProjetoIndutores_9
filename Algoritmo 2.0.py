@@ -4,9 +4,6 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib import cm
-import matplotlib
-from matplotlib.tri import Triangulation
-from matplotlib.colors import Normalize
 
 # Parametros de entrada =============================================
 f_min = 20000

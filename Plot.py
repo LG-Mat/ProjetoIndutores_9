@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib import cm
 
-m = 6 # Determina os dados de quais materiais serão plotados
+m = 0 # Determina os dados de quais materiais serão plotados
 
 arquivos = {
     0: r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\KMu.csv', # 0: Kool Mu

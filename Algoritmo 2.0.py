@@ -77,11 +77,11 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
             for i in range(df.shape[0]):
                 if (df.values[i][8] * n_empilhamento) > E:
                     # Cálculo do número de espiras
-                    N_espiras = np.sqrt((L * 1000000 * df.values[i][4] * 1000) / (
+                    N_espiras = np.sqrt((L * 1000000 * df.values[i][4] * 1000) / ( # L [H] -> passar para nH
                             0.4 * np.pi * df.values[i][1] * df.values[i][10] * n_empilhamento))
-                    N_espiras = math.ceil(N_espiras)
 
-                    N_espiras_i = N_espiras
+                    #N_espiras = np.sqrt((L * 1000000000)/(df.values[i][3]*df.values[i][4]*n_empilhamento))
+                    N_espiras = math.ceil(N_espiras)
 
                     # Indução magnética
                     IM = (np.pi * 4 * N_espiras + (var_corrente + corrente_cc)) / df.values[i][4]  # [Oe]
@@ -103,7 +103,6 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                             awg_indice = n - 1
                             break
 
-                    # TODO: verificar se valor de condutores em paralelo está correto
                     J = 450  # Densidade de corrente no condutor ()
                     AWG = df_awg.values[awg_indice][1]
                     A_necessaria = corrente_cc * (2 ** (1 / 2)) / J
@@ -123,8 +122,8 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                         n_empilhamento = n_empilhamento + 1
 
                     # Calculo das perdas no núcleo ==============================================
-                    H_max = 4 * np.pi * ((N_espiras / df.values[i][4]) * (corrente_cc + var_corrente / 2))
-                    H_min = 4 * np.pi * ((N_espiras / df.values[i][4]) * (corrente_cc - var_corrente / 2))
+                    H_max = 4 * np.pi * ((N_espiras / df.values[i][4]) * (corrente_cc + (var_corrente / 2)))
+                    H_min = 4 * np.pi * ((N_espiras / df.values[i][4]) * (corrente_cc - (var_corrente / 2)))
 
                     B_max = ((df.values[i][14] + df.values[i][15] * H_max + df.values[i][16] * H_max ** 2) / (
                         1 + df.values[i][17] * H_max + df.values[i][18] * H_max ** 2)) ** df.values[i][19]
@@ -136,20 +135,23 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                     PL = df.values[i][11] * (Bpk ** df.values[i][12]) * (
                             (f * 0.001) ** df.values[i][13])  # mW/cm³
 
-                    perdas_nucleo = PL * df.values[i][4] * 0.001 * float(df.values[i][10] * n_empilhamento)
-                    perdas_nucleo = perdas_nucleo * 0.001
+                    perdas_nucleo = PL * df.values[i][4] * 0.1 * float(df.values[i][10] * 0.01 * n_empilhamento) # [mW]
+                    perdas_nucleo = perdas_nucleo * 0.001 #[W]
 
                     # Perdas no condutor ====================================================
                     comprimento_medio_da_espira = (2 * df.values[i][22] * n_empilhamento + 2 * (
-                            df.values[i][20] - df.values[i][21])) / 10
+                            df.values[i][20] - df.values[i][21])) / 10 #[cm]
                     R_CC_condutor = comprimento_medio_da_espira * (df_awg.values[awg_indice][2] * 0.000001)
-                    R_CC_condutor_paralelo = 1 / (N_paralelo * (1 / R_CC_condutor))
+                    R_CC_condutor_paralelo = R_CC_condutor / N_paralelo
                     perdas_cobre = (corrente_cc ** 2) * R_CC_condutor_paralelo * N_espiras
 
+                    # TODO: Adicionar a resistência CA do condutor
+
                     # Temperatura no núcleo =================================================
-                    area_externa = 2*np.pi*((df.values[i][20]**2 - df.values[i][21]**2)/4 + df.values[i][22]*n_empilhamento*(df.values[i][21]+df.values[i][22]))
-                    area_externa = area_externa*0.0001
-                    temp_nuc = temp_amb + ((perdas_cobre + perdas_nucleo) / (area_externa))**0.833
+                    area_externa = 2*np.pi*((df.values[i][20]**2 - df.values[i][21]**2)/4 + df.values[i][22]*n_empilhamento*((df.values[i][21]+df.values[i][22])/2)) # [mm²]
+                    area_externa = area_externa * 0.01 #[cm²]
+
+                    temp_nuc = temp_amb + ((perdas_cobre + perdas_nucleo) * 1000 / (area_externa)) ** 0.833 # [mW][cm²]
 
                     perdas_totais = perdas_cobre + perdas_nucleo
 
@@ -290,46 +292,46 @@ for m in range(matrizes_plot.shape[0]):
             fig.tight_layout()
 
             if p == 2:
-                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMu.jpg', dpi=600)
-                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMM.jpg', dpi=600)
-                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMH.jpg', dpi=600)
-                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\Xf.jpg', dpi=600)
-                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\HF.jpg', dpi=600)
-                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\EDG.jpg', dpi=600)
-                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\MPP.jpg', dpi=600)
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\MPP.pdf', dpi=600)
 
             if p == 3:
-                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMu.png', dpi=600)
-                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMM.png', dpi=600)
-                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMH.png', dpi=600)
-                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\Xf.png', dpi=600)
-                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\HF.png', dpi=600)
-                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\EDG.png', dpi=600)
-                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\MPP.png', dpi=600)
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\MPP.pdf', dpi=600)
 
             if p == 4:
-                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMu.png', dpi=600)
-                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMM.png', dpi=600)
-                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMH.png', dpi=600)
-                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\Xf.png', dpi=600)
-                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\HF.png', dpi=600)
-                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\EDG.png', dpi=600)
-                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\MPP.png', dpi=600)
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\MPP.pdf', dpi=600)
 
             if p == 5:
-                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMu.png', dpi=600)
-                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMM.png', dpi=600)
-                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMH.png', dpi=600)
-                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\Xf.png', dpi=600)
-                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\HF.png', dpi=600)
-                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\EDG.png', dpi=600)
-                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\MPP.png', dpi=600)
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\MPP.pdf', dpi=600)
 
             if p == 6:
-                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\KMu.png', dpi=600)
-                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\KMM.png', dpi=600)
-                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\KMH.png', dpi=600)
-                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\Xf.png', dpi=600)
-                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\HF.png', dpi=600)
-                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\EDG.png', dpi=600)
-                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\MPP.png', dpi=600)
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\MPP.pdf', dpi=600)

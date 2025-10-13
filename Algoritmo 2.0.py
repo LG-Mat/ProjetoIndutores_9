@@ -139,11 +139,26 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                     perdas_nucleo = perdas_nucleo * 0.001 #[W]
 
                     # Perdas no condutor ====================================================
+
+                    #Perdas CC
                     comprimento_medio_da_espira = (2 * df.values[i][22] * n_empilhamento + 2 * (
                             df.values[i][20] - df.values[i][21])) / 10 #[cm]
                     R_CC_condutor = comprimento_medio_da_espira * (df_awg.values[awg_indice][2] * 0.000001)
                     R_CC_condutor_paralelo = R_CC_condutor / N_paralelo
                     perdas_cobre = (corrente_cc ** 2) * R_CC_condutor_paralelo * N_espiras
+
+                    # Perdas CA
+                    N_camadas = 1
+                    # ρ: [μΩ/cm] -> [Ω/cm] | μo = 1.256637 μH/m -> 1.256637*10^-2 μH/cm | f: Hz
+                    profund_pelicular = ((df_awg.values[awg_indice][2] * 0.000001)/(np.pi * 1.256637 * 0.00000001 * f))**2
+
+                    A_dow = ((np.pi/4)**0.75 * df_awg.values[awg_indice][3] / profund_pelicular
+                             * (df_awg.values[awg_indice][3]/ (df_awg.values[awg_indice][3] * 1.02)))
+
+                    R_CA = A_dow * (((np.sinh(2*A_dow)+np.sin(A_dow))/(np.cosh(2*A_dow)-np.cos(A_dow)))+
+                                    (2*(N_camadas**2 - 1)/3)*((np.sinh(A_dow)-np.sin(A_dow))/(np.cosh(A_dow)+np.cos(A_dow))))
+
+
 
                     # TODO: Adicionar a resistência CA do condutor
 
@@ -232,6 +247,7 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                         #print('r: ', r, '|| f: ', f/1000, '|| Stack: ', nuc_paralelos, '|| Perdas Nuc: ', menor_perdas_cobre,
                         #      '|| Perdas cobre',  menor_perdas_nucleo, '|| Temp: ', menor_temp_nuc)
                         dados_plot_MPP = np.r_[dados_plot_MPP, [data]]
+    print(R_CA, f)
 
 matrizes_plot = np.array([dados_plot_KMu, dados_plot_KMM, dados_plot_KMH, dados_plot_Xf,
                                  dados_plot_HF, dados_plot_EDG, dados_plot_MPP], dtype=object)

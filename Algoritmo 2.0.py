@@ -19,6 +19,7 @@ Vin = 100
 D = 0.5
 
 temp_amb = 20
+J = 450  # Densidade de corrente no condutor
 # ===================================================================
 
 dados_plot_KMu = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
@@ -103,7 +104,6 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                             awg_indice = n - 1
                             break
 
-                    J = 450  # Densidade de corrente no condutor ()
                     AWG = df_awg.values[awg_indice][1]
                     A_necessaria = corrente_cc * (2 ** (1 / 2)) / J
                     N_paralelo = A_necessaria / (df_awg.values[awg_indice][1] / 1000)
@@ -155,8 +155,9 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                     A_dow = ((np.pi/4)**0.75 * df_awg.values[awg_indice][3] / profund_pelicular
                              * (df_awg.values[awg_indice][3]/ (df_awg.values[awg_indice][3] * 1.02)))
 
-                    R_CA = A_dow * (((np.sinh(2*A_dow)+np.sin(A_dow))/(np.cosh(2*A_dow)-np.cos(A_dow)))+
-                                    (2*(N_camadas**2 - 1)/3)*((np.sinh(A_dow)-np.sin(A_dow))/(np.cosh(A_dow)+np.cos(A_dow))))
+                    R_CA = (A_dow * (((np.sinh(2*A_dow)+np.sin(A_dow))/(np.cosh(2*A_dow)-np.cos(A_dow)))+
+                                    (2*(N_camadas**2 - 1)/3)*((np.sinh(A_dow)-np.sin(A_dow))/(np.cosh(A_dow)+np.cos(A_dow)))) *
+                            df_awg.values[awg_indice][2] * comprimento_medio_da_espira * N_espiras / (corrente_cc / J))
 
 
 

@@ -4,9 +4,10 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib import cm
+from PerdasCobreCA import PerdasCuCA
 
 # Parametros de entrada =============================================
-f_min = 20000
+f_min = 50000
 f_max = 210000
 f_step = 10000
 # TODO: adicionar caso em que nivel CC de corrente for zero
@@ -16,7 +17,7 @@ ripple_step = 5
 
 corrente_cc = 5
 Vin = 100
-D = 0.5
+D = 0.2
 
 temp_amb = 20
 J = 450  # Densidade de corrente no condutor
@@ -45,6 +46,7 @@ awg_indice = 0
 df = pd.read_csv(
     r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\DadosIndutor - Toroids - Copia (alterado) 01-04.csv')
 df_awg = pd.read_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\Dados AWG.csv')
+df_radius = pd.read_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\RelacaoDeRaios.csv')
 
 for f in range(f_min, f_max, f_step):  # Varredura na frequência
     print('Valor da frequência atual: ', f)
@@ -109,6 +111,10 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                     N_paralelo = A_necessaria / (df_awg.values[awg_indice][1] / 1000)
                     N_paralelo = math.ceil(N_paralelo)
 
+                    for indice_paralelo in range(0, df_radius.shape[0], 1):
+                        if df_radius.values[indice_paralelo][0] == N_paralelo:
+                            break
+
                     # Fator de enrolamento =======================================================
                     WindFactor = (df_awg.values[awg_indice][1] * 0.001 * N_espiras * N_paralelo) / (
                             df.values[i][23] / 100)
@@ -148,6 +154,16 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                     perdas_cobre = (corrente_cc ** 2) * R_CC_condutor_paralelo * N_espiras
 
                     # Perdas CA
+                    print(N_espiras, N_paralelo, f, corrente_cc, var_corrente,
+                                                 J, D, df_radius.values[indice_paralelo][1], df_radius.values[indice_paralelo][2],
+                                                 df_awg.values[awg_indice][3], comprimento_medio_da_espira, df.values[i][21])
+                    perdas_cobre_CA = PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente,
+                                                 J, D, df_radius.values[indice_paralelo][1], df_radius.values[indice_paralelo][2],
+                                                 df_awg.values[awg_indice][3], comprimento_medio_da_espira, df.values[i][21])
+                    print('\n')
+
+                    #print("Perdas Cobre CA: ", perdas_cobre_CA)
+
                     N_camadas = 1
                     # ρ: [μΩ/cm] -> [Ω/cm] | μo = 1.256637 μH/m -> 1.256637*10^-2 μH/cm | f: Hz
                     profund_pelicular = ((df_awg.values[awg_indice][2] * 0.000001)/(np.pi * 1.256637 * 0.00000001 * f))**2

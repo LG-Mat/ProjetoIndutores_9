@@ -7,17 +7,17 @@ from matplotlib import cm
 from PerdasCobreCA import PerdasCuCA
 
 # Parametros de entrada =============================================
-f_min = 50000
+f_min = 20000
 f_max = 210000
 f_step = 10000
 # TODO: adicionar caso em que nivel CC de corrente for zero
-ripple_i_min = 20
+ripple_i_min = 5
 ripple_i_max = 105  # 100% de ripple: ripple_i_max = 105
 ripple_step = 5
 
 corrente_cc = 5
 Vin = 100
-D = 0.2
+D = 0.5
 
 temp_amb = 20
 J = 450  # Densidade de corrente no condutor
@@ -154,28 +154,13 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                     perdas_cobre = (corrente_cc ** 2) * R_CC_condutor_paralelo * N_espiras
 
                     # Perdas CA
-                    print(N_espiras, N_paralelo, f, corrente_cc, var_corrente,
-                                                 J, D, df_radius.values[indice_paralelo][1], df_radius.values[indice_paralelo][2],
+                    print(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, df_radius.values[indice_paralelo][1], df_radius.values[indice_paralelo][2],
                                                  df_awg.values[awg_indice][3], comprimento_medio_da_espira, df.values[i][21])
                     perdas_cobre_CA = PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente,
                                                  J, D, df_radius.values[indice_paralelo][1], df_radius.values[indice_paralelo][2],
                                                  df_awg.values[awg_indice][3], comprimento_medio_da_espira, df.values[i][21])
-                    print('\n')
 
-                    #print("Perdas Cobre CA: ", perdas_cobre_CA)
-
-                    N_camadas = 1
-                    # ρ: [μΩ/cm] -> [Ω/cm] | μo = 1.256637 μH/m -> 1.256637*10^-2 μH/cm | f: Hz
-                    profund_pelicular = ((df_awg.values[awg_indice][2] * 0.000001)/(np.pi * 1.256637 * 0.00000001 * f))**2
-
-                    A_dow = ((np.pi/4)**0.75 * df_awg.values[awg_indice][3] / profund_pelicular
-                             * (df_awg.values[awg_indice][3]/ (df_awg.values[awg_indice][3] * 1.02)))
-
-                    R_CA = (A_dow * (((np.sinh(2*A_dow)+np.sin(A_dow))/(np.cosh(2*A_dow)-np.cos(A_dow)))+
-                                    (2*(N_camadas**2 - 1)/3)*((np.sinh(A_dow)-np.sin(A_dow))/(np.cosh(A_dow)+np.cos(A_dow)))) *
-                            df_awg.values[awg_indice][2] * comprimento_medio_da_espira * N_espiras / (corrente_cc / J))
-
-
+                    perdas_cobre = perdas_cobre + perdas_cobre_CA
 
                     # TODO: Adicionar a resistência CA do condutor
 
@@ -264,7 +249,6 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                         #print('r: ', r, '|| f: ', f/1000, '|| Stack: ', nuc_paralelos, '|| Perdas Nuc: ', menor_perdas_cobre,
                         #      '|| Perdas cobre',  menor_perdas_nucleo, '|| Temp: ', menor_temp_nuc)
                         dados_plot_MPP = np.r_[dados_plot_MPP, [data]]
-    print(R_CA, f)
 
 matrizes_plot = np.array([dados_plot_KMu, dados_plot_KMM, dados_plot_KMH, dados_plot_Xf,
                                  dados_plot_HF, dados_plot_EDG, dados_plot_MPP], dtype=object)

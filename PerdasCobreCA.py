@@ -20,18 +20,19 @@ def PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PF
     delta_f = Fs / N
 
     max_harmonics = int((Fs / 2) / f)
-    # Inicializa a soma
+
     soma_P_CA = 0.0
 
-    for n in range(0, max_harmonics + 1, 1):
+    for n in range(0, max_harmonics + 10, 1):
         # Calcula a frequência do harmônico
         freq_harmonico = n * freq_fundamental
 
         indice_bin = int(round(freq_harmonico / delta_f))
 
         # Verifica se o índice está dentro dos limites da metade do espectro (N/2)
-        if indice_bin < N // 2:
+        if indice_bin <= (N - 1):
             magnitude = amplitude_espectro[indice_bin]
+
             large_circle_radius = PFT / float(RF)
             diam_cond_paralelo = large_circle_radius * d_cond
             PF = diam_cond_paralelo / (N_paralelo ** (1 / 2) * d_cond)
@@ -59,10 +60,10 @@ def PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PF
                         1.72 * 0.00000001 * comprimento_medio_da_espira * N_espiras / (corrente_cc / J))
 
                 P_CA = R_CA * (magnitude ** 2) / 2
-                print('fh: ',freq_harmonico,'A_dow: ', A_dow,'prof_pelicular: ', profund_pelicular, 'R_CA: ', R_CA, 'P_CA', P_CA)
-                #print(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PFT, d_cond, comprimento_medio_da_espira, ID)
+                #print('fh: ',freq_harmonico,'A_dow: ', A_dow,'prof_pelicular: ', profund_pelicular, 'R_CA: ', R_CA, 'P_CA', P_CA)
                 soma_P_CA += P_CA
     return soma_P_CA
 
 if __name__ == '__main__':
-    PerdasCuCA(92, 40, 90000, 5, 1.5, 450, 0.2, 1.29, 0.1403736042, 0.0267, 6.436, 22.56)
+    PerdasCuCA(53, 13, 30000, 5, 5.0, 450, 0.2, 1.26, 0.2360679775, 0.0452, 16.714000000000002, 77.19)
+    PerdasCuCA(55, 16, 40000, 5, 0.5, 450, 0.2, 1.26, 0.2166474292, 0.0409, 14.138, 24.0)

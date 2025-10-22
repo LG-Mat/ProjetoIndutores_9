@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import signal
 
-def PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PF, d_cond, comprimento_medio_da_espira, ID):
+def PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PFT, d_cond, comprimento_medio_da_espira, ID):
     Fs = f * 10
     T = 1.0 / Fs
     N = 1024
@@ -32,7 +32,7 @@ def PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PF
         # Verifica se o índice está dentro dos limites da metade do espectro (N/2)
         if indice_bin < N // 2:
             magnitude = amplitude_espectro[indice_bin]
-            large_circle_radius = PF / float(RF)
+            large_circle_radius = PFT / float(RF)
             diam_cond_paralelo = large_circle_radius * d_cond
             PF = diam_cond_paralelo / (N_paralelo ** (1 / 2) * d_cond)
             porosidade = 1 / PF
@@ -50,7 +50,7 @@ def PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PF
 
             if freq_harmonico != 0:
                 # ρ: [Ωm] | μo = 1.256637 μH/m | f: Hz
-                profund_pelicular = ((1.72 * 1e-8) / (np.pi * (4 * np.pi * 1e-7) * freq_harmonico/1000)) ** (1 / 2) #[m]
+                profund_pelicular = ((1.72 * 1e-8) / (np.pi * (4 * np.pi * 1e-7) * freq_harmonico)) ** (1 / 2) #[m]
 
                 A_dow = (((np.pi / 4) ** 0.75) * (d_cond * 0.01 / profund_pelicular) * porosidade ** (1 / 2))
 
@@ -59,6 +59,10 @@ def PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PF
                         1.72 * 0.00000001 * comprimento_medio_da_espira * N_espiras / (corrente_cc / J))
 
                 P_CA = R_CA * (magnitude ** 2) / 2
-                print('fh: ',freq_harmonico,'A_dow: ', A_dow,'prof_pelicular: ', profund_pelicular, 'R_CA: ', R_CA, 'P_CA', P_CA, '\n')
+                print('fh: ',freq_harmonico,'A_dow: ', A_dow,'prof_pelicular: ', profund_pelicular, 'R_CA: ', R_CA, 'P_CA', P_CA)
+                #print(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PFT, d_cond, comprimento_medio_da_espira, ID)
                 soma_P_CA += P_CA
     return soma_P_CA
+
+if __name__ == '__main__':
+    PerdasCuCA(92, 40, 90000, 5, 1.5, 450, 0.2, 1.29, 0.1403736042, 0.0267, 6.436, 22.56)

@@ -1,0 +1,404 @@
+import pandas as pd
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
+from matplotlib import cm
+from PerdasCobreCA import PerdasCuCA
+
+# Parametros de entrada =============================================
+f_min = 10000
+f_max = 210000
+f_step = 10000
+# TODO: adicionar caso em que nivel CC de corrente for zero
+ripple_i_min = 5
+ripple_i_max = 105  # 100% de ripple: ripple_i_max = 105
+ripple_step = 5
+
+corrente_cc = 5
+Vin = 100
+D = 0.5
+
+temp_amb = 20
+J = 450  # Densidade de corrente no condutor
+# ===================================================================
+# Cria as matrizes onde serão armazenadas as informações para o plot dos gráficos
+dados_plot_KMu = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_KMu = np.delete(dados_plot_KMu, 0, 0)
+dados_plot_KMM = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_KMM = np.delete(dados_plot_KMM, 0, 0)
+dados_plot_KMH = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_KMH = np.delete(dados_plot_KMH, 0, 0)
+dados_plot_Xf = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_Xf = np.delete(dados_plot_Xf, 0, 0)
+dados_plot_HF = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_HF = np.delete(dados_plot_HF, 0, 0)
+dados_plot_EDG = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_EDG = np.delete(dados_plot_EDG, 0, 0)
+dados_plot_MPP = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
+dados_plot_MPP = np.delete(dados_plot_MPP, 0, 0)
+# Variável para determinar a quantidade de projetos realizados para cada material
+n_kmu = 0
+n_kmm = 0
+n_khf = 0
+n_xf = 0
+n_hf = 0
+n_edg = 0
+n_mpp = 0
+# Variável para determinar a quantidade de projetos selecionados para cada material, idealmente igual à quantidade
+# de pontos de operação
+pn_kmu = 0
+pn_kmm = 0
+pn_khf = 0
+pn_xf = 0
+pn_hf = 0
+pn_edg = 0
+pn_mpp = 0
+
+awg_indice = 0 # Inicia a variável para seleção do condutor utilizado no projeto
+# Carrega o banco de dados de núcleos, condutores e coeficientes de empacotamento circular
+df = pd.read_csv(
+    r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\DadosIndutor - Toroids - Copia (alterado) 01-04.csv')
+df_awg = pd.read_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\Dados AWG.csv')
+df_radius = pd.read_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\RelacaoDeRaios.csv')
+
+for f in range(f_min, f_max, f_step):  # Varredura na frequência
+    print('Valor da frequência atual: ', f)
+    for r in range(ripple_i_min, ripple_i_max, ripple_step):  # Varredura no ripple de corrente
+        # Cria as matrizes onde serão armazenados os dados dos projetos de cada material
+        # e exclui o primeiro componente para não ter valores nulos
+        matriz_selecao = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        matriz_selecao = np.delete(matriz_selecao, 0, 0)
+        matriz_KMu = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        matriz_KMu = np.delete(matriz_KMu, 0, 0)
+        matriz_KMM = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        matriz_KMM = np.delete(matriz_KMM, 0, 0)
+        matriz_KMH = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        matriz_KMH = np.delete(matriz_KMH, 0, 0)
+        matriz_Xf = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        matriz_Xf = np.delete(matriz_Xf, 0, 0)
+        matriz_HF = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        matriz_HF = np.delete(matriz_HF, 0, 0)
+        matriz_EDG = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        matriz_EDG = np.delete(matriz_EDG, 0, 0)
+        matriz_MPP = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        matriz_MPP = np.delete(matriz_MPP, 0, 0)
+
+        var_corrente = r * 0.01 * corrente_cc
+        L = Vin * D / (var_corrente * f)  # [H]
+        E = L * 1000 * (var_corrente + corrente_cc) ** 2  # [mHA²]
+
+        for i in range(df.shape[0]):
+            executabilidade = 0
+            n_empilhamento = 1
+            while executabilidade != 1:
+                if (df.values[i][8] * n_empilhamento) > E:
+                    # Cálculo do número de espiras
+                    N_espiras = np.sqrt((L * 1000000 * df.values[i][4] * 1000) / ( # L [H] -> passar para nH
+                            0.4 * np.pi * df.values[i][1] * df.values[i][10] * n_empilhamento))
+
+                    #N_espiras = np.sqrt((L * 1000000000)/(df.values[i][3]*df.values[i][4]*n_empilhamento))
+                    N_espiras = math.ceil(N_espiras)
+
+                    # Indução magnética
+                    IM = (np.pi * 4 * N_espiras + (var_corrente + corrente_cc)) / df.values[i][4]  # [Oe]
+                    permeabilidade = (1 / (df.values[i][5] + df.values[i][6] * IM ** df.values[i][7])) * 0.01
+
+                    # Ajuste do número de espiras
+                    N_espiras = N_espiras / permeabilidade
+                    N_espiras = math.ceil(N_espiras)
+
+                    IM = (np.pi * 4 * N_espiras + (var_corrente + corrente_cc)) / df.values[i][4]
+                    perm_final = (1 / (df.values[i][5] + df.values[i][6] * IM ** df.values[i][7])) * 0.01
+                    L_final = (N_espiras ** 2 * 0.4 * np.pi * df.values[i][1] * df.values[i][10] * n_empilhamento) / (
+                            1000000 * df.values[i][4] * 1000)
+
+                    # Seleção do condutor ====================================================
+                    d_util = 7.5 / (f ** (1 / 2))
+                    for n in range(df_awg.shape[0]):
+                        if d_util > df_awg.values[n][3]:  # df_awg[][3] diâmetro do condutor em cm
+                            awg_indice = n - 1
+                            break
+
+                    AWG = df_awg.values[awg_indice][1]
+                    A_necessaria = corrente_cc * (2 ** (1 / 2)) / J
+                    N_paralelo = A_necessaria / (df_awg.values[awg_indice][1] / 1000)
+                    N_paralelo = math.ceil(N_paralelo)
+
+                    for indice_paralelo in range(0, df_radius.shape[0], 1):
+                        if df_radius.values[indice_paralelo][0] == N_paralelo:
+                            break
+
+                    # Fator de enrolamento =======================================================
+                    WindFactor = (df_awg.values[awg_indice][1] * 0.001 * N_espiras * N_paralelo) / (
+                            df.values[i][23] / 100)
+                    print(WindFactor, df.values[i][23])
+                    if WindFactor <= 0.4:
+                        executabilidade = 1
+
+                    if WindFactor > 0.4:
+                        executabilidade = 0
+                        n_empilhamento = n_empilhamento + 1
+
+                    if n_empilhamento >= 5:
+                        break
+
+                    # Calculo das perdas no núcleo ==============================================
+                    H_max = 4 * np.pi * ((N_espiras / df.values[i][4]) * (corrente_cc + (var_corrente / 2)))
+                    H_min = 4 * np.pi * ((N_espiras / df.values[i][4]) * (corrente_cc - (var_corrente / 2)))
+
+                    B_max = ((df.values[i][14] + df.values[i][15] * H_max + df.values[i][16] * H_max ** 2) / (
+                        1 + df.values[i][17] * H_max + df.values[i][18] * H_max ** 2)) ** df.values[i][19]
+                    B_min = ((df.values[i][14] + df.values[i][15] * H_min + df.values[i][16] * H_min ** 2) / (
+                        1 + df.values[i][17] * H_min + df.values[i][18] * H_min ** 2)) ** df.values[i][19]
+
+                    Bpk = (B_max - B_min) / 2
+
+                    PL = df.values[i][11] * (Bpk ** df.values[i][12]) * (
+                            (f * 0.001) ** df.values[i][13])  # mW/cm³
+
+                    perdas_nucleo = PL * df.values[i][4] * 0.1 * float(df.values[i][10] * 0.01 * n_empilhamento) # [mW]
+                    perdas_nucleo = perdas_nucleo * 0.001 #[W]
+
+                    # Perdas no condutor ====================================================
+
+                    #Perdas CC
+                    comprimento_medio_da_espira = (2 * df.values[i][22] * n_empilhamento + 2 * (
+                            df.values[i][20] - df.values[i][21])) / 10 #[cm]
+                    R_CC_condutor = comprimento_medio_da_espira * (df_awg.values[awg_indice][2] * 0.000001)
+                    R_CC_condutor_paralelo = R_CC_condutor / N_paralelo
+                    perdas_cobre = (corrente_cc ** 2) * R_CC_condutor_paralelo * N_espiras
+
+                    # Perdas CA
+                    #print(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, df_radius.values[indice_paralelo][1], df_radius.values[indice_paralelo][2],
+                    #                             df_awg.values[awg_indice][3], comprimento_medio_da_espira, df.values[i][21])
+                    perdas_cobre_CA = PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente,
+                                                 J, D, df_radius.values[indice_paralelo][1], df_radius.values[indice_paralelo][2],
+                                                 df_awg.values[awg_indice][3], comprimento_medio_da_espira, df.values[i][21])
+
+                    perdas_cobre = perdas_cobre + perdas_cobre_CA
+
+                    # Temperatura no núcleo =================================================
+                    area_externa = 2*np.pi*((df.values[i][20]**2 - df.values[i][21]**2)/4 + df.values[i][22]*n_empilhamento*((df.values[i][21]+df.values[i][22])/2)) # [mm²]
+                    area_externa = area_externa * 0.01 #[cm²]
+
+                    temp_nuc = temp_amb + ((perdas_cobre + perdas_nucleo) * 1000 / (area_externa)) ** 0.833 # [mW][cm²]
+
+                    perdas_totais = perdas_cobre + perdas_nucleo
+
+                    #if 55000 <= df.values[i][0] < 56000:
+                    #    print('frequência: ', f, '| ripple: ', r, '| AWG: ', df_awg.values[awg_indice][0], 'N inicial', N_espiras_i, '| N de espiras: ', N_espiras,
+                    #          '| N em paralelo: ', N_paralelo, '| Empilhamento: ', n_empilhamento, 'WindFactor: ', WindFactor, 'Indutância: ', L, 'Energia ', E)
+
+                    if executabilidade != 0:
+                        dados = np.array(
+                            [1, df.values[i][0], L_final, N_espiras, 1, float(df.values[i][9]) * 0.001 * n_empilhamento,
+                             f * 0.001, var_corrente * 100 / 5, perdas_nucleo, perdas_cobre, AWG, N_paralelo,
+                             temp_nuc, n_empilhamento, perdas_totais])
+
+                        matriz_selecao = np.r_[matriz_selecao, [dados]]
+
+                        print("ID: ", df.values[i][0],"| Energia asuportada: ", df.values[i][8]*n_empilhamento,"| Energia: ", E,"| Empilhamento", n_empilhamento)
+
+                        #print('frequência: ', f, '| ripple: ', r, '| ID', dados[1], '| AWG: ', df_awg.values[awg_indice][0], '| N de espiras: ', N_espiras,
+                        #      '| N em paralelo: ', N_paralelo, '| Empilhamento: ', n_empilhamento, 'WindFactor: ', WindFactor)
+
+                        if 77000 <= df.values[i][0] < 78000:
+                            n_kmu = n_kmu + 1
+                            matriz_KMu = np.r_[matriz_KMu, [dados]]
+                        if 79000 <= df.values[i][0] < 80000:
+                            n_kmm = n_kmm + 1
+                            matriz_KMM = np.r_[matriz_KMM, [dados]]
+                        if 76000 <= df.values[i][0] < 77000:
+                            n_khf = n_khf + 1
+                            matriz_KMH = np.r_[matriz_KMH, [dados]]
+                        if 78000 <= df.values[i][0] < 79000:
+                            n_xf = n_xf + 1
+                            matriz_Xf = np.r_[matriz_Xf, [dados]]
+                        if 58000 <= df.values[i][0] < 59000:
+                            n_hf = n_hf + 1
+                            matriz_HF = np.r_[matriz_HF, [dados]]
+                        if 59000 <= df.values[i][0] < 60000:
+                            n_edg = n_edg + 1
+                            matriz_EDG = np.r_[matriz_EDG, [dados]]
+                        if 55000 <= df.values[i][0] < 56000:
+                            n_mpp = n_mpp + 1
+                            matriz_MPP = np.r_[matriz_MPP, [dados]]
+                #else:break
+                else:
+                    n_empilhamento = n_empilhamento + 1
+                    if n_empilhamento >= 5:break
+
+        if matriz_selecao.shape[0] > 0:
+            matrizes = np.array([matriz_KMu, matriz_KMM, matriz_KMH, matriz_Xf,
+                                 matriz_HF, matriz_EDG, matriz_MPP], dtype=object)
+
+            for m in range(matrizes.shape[0]):
+                matriz_atual = matrizes[m]
+                if matriz_atual.shape[0] > 0:
+                    menor_vol = matriz_atual[0][5]
+                    menor_n_esp = matriz_atual[0][3]
+                    id_n_espiras = 0
+                    menor_perdas_nucleo = matriz_atual[0][8]
+                    menor_perdas_cobre = matriz_atual[0][9]
+                    menor_temp_nuc = matriz_atual[0][12]
+                    menor_perdas_totais = matriz_atual[0][14]
+
+                    for i in range(matriz_atual.shape[0]):
+                        if matriz_atual[i][8] < menor_perdas_nucleo:
+                            menor_perdas_nucleo = matriz_atual[i][8]
+                            nuc_paralelos = matriz_atual[i][13]
+
+                        if matriz_atual[i][9] < menor_perdas_cobre:
+                            menor_perdas_cobre = matriz_atual[i][9]
+
+                        if matriz_atual[i][12] < menor_temp_nuc:
+                            menor_temp_nuc = matriz_atual[i][12]
+
+                        if matriz_atual[i][14] < menor_perdas_totais:
+                            menor_perdas_totais = matriz_atual[i][14]
+
+                        if matriz_atual[i][5] < menor_vol:
+                            menor_vol = matriz_atual[i][5]
+
+                    for i in range(matriz_atual.shape[0]):
+                        if matriz_atual[i][5] == menor_vol:
+                            if matriz_atual[i][3] < menor_n_esp:
+                                if matriz_atual[i][3] < menor_n_esp:
+                                    menor_n_esp = matriz_atual[i][3]
+                                    id_n_espiras = i
+
+                    data = np.array([r, f/1000, matriz_atual[id_n_espiras][5], menor_perdas_nucleo,
+                                     menor_perdas_cobre, menor_temp_nuc, menor_perdas_totais, matriz_atual[id_n_espiras][1], matriz_atual[id_n_espiras][12]])
+                    #print("Voulume: ", matriz_atual[id_n_espiras][5], "Temperatura: ", matriz_atual[id_n_espiras][12], "Ripple: ", r)
+                    if 77000 <= data[7] < 78000:
+                        pn_kmu = pn_kmu + 1
+                        dados_plot_KMu = np.r_[dados_plot_KMu, [data]]
+                    if 79000 <= data[7] < 80000:
+                        pn_kmm = pn_kmm + 1
+                        dados_plot_KMM = np.r_[dados_plot_KMM, [data]]
+                    if 76000 <= data[7] < 77000:
+                        pn_khf = pn_khf + 1
+                        dados_plot_KMH = np.r_[dados_plot_KMH, [data]]
+                    if 78000 <= data[7] < 79000:
+                        pn_xf = pn_xf + 1
+                        dados_plot_Xf = np.r_[dados_plot_Xf, [data]]
+                    if 58000 <= data[7] < 59000:
+                        pn_hf = pn_hf + 1
+                        dados_plot_HF = np.r_[dados_plot_HF, [data]]
+                    if 59000 <= data[7] < 60000:
+                        pn_edg = pn_edg + 1
+                        dados_plot_EDG = np.r_[dados_plot_EDG, [data]]
+                    if 55000 <= data[7] < 56000:
+                        pn_mpp = pn_mpp + 1
+                        #print('r: ', r, '|| f: ', f/1000, '|| Stack: ', nuc_paralelos, '|| Perdas Nuc: ', menor_perdas_cobre,
+                        #      '|| Perdas cobre',  menor_perdas_nucleo, '|| Temp: ', menor_temp_nuc)
+                        dados_plot_MPP = np.r_[dados_plot_MPP, [data]]
+
+matrizes_plot = np.array([dados_plot_KMu, dados_plot_KMM, dados_plot_KMH, dados_plot_Xf,
+                                 dados_plot_HF, dados_plot_EDG, dados_plot_MPP], dtype=object)
+
+dataPlotKMu = pd.DataFrame(dados_plot_KMu)
+dataPlotKMM = pd.DataFrame(dados_plot_KMM)
+dataPlotKMH = pd.DataFrame(dados_plot_KMH)
+dataPlotXf = pd.DataFrame(dados_plot_Xf)
+dataPlotHF = pd.DataFrame(dados_plot_HF)
+dataPlotEDG = pd.DataFrame(dados_plot_EDG)
+dataPlotMPP = pd.DataFrame(dados_plot_MPP)
+
+dataPlotKMu.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\KMu.csv', index=False)
+dataPlotKMM.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\KMM.csv', index=False)
+dataPlotKMH.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\KMH.csv', index=False)
+dataPlotXf.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\Xf.csv', index=False)
+dataPlotHF.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\HF.csv', index=False)
+dataPlotEDG.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\EDG.csv', index=False)
+dataPlotMPP.to_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\CSV_plot\MPP.csv', index=False)
+
+for m in range(matrizes_plot.shape[0]):
+    plot_atual = matrizes_plot[m]
+    if plot_atual.shape[0] > 3:
+        for p in range(2, 7, 1):
+            X = plot_atual[:, 0]
+            Y = plot_atual[:, 1]
+            Z = plot_atual[:, p]
+            C = plot_atual[:, 8]
+
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+
+            surf = ax.plot_trisurf(X, Y, Z, cmap=cm.jet, linewidth=0)
+
+            if p == 3: ax.view_init(elev=20, azim=-135)  # perdas no nucleo
+            if p == 4 or p == 2: ax.view_init(elev=20, azim=45)  # perdas no cobre e volume do núcleo
+            if p == 5 or p == 6: ax.view_init(elev=20, azim=135) # Temperatura e perdas totais
+
+            if m == 0: plt.title('Kool Mu')
+            if m == 1: plt.title('Kool Mu Max')
+            if m == 2: plt.title('Kool Mu Hf')
+            if m == 3: plt.title('Xflux')
+            if m == 4: plt.title('High Flux')
+            if m == 5: plt.title('Edge')
+            if m == 6: plt.title('Molypermaloy')
+
+            ax.set_xlabel(u'Δi(%)')
+            ax.set_ylabel('Frequência (kHz)')
+
+            if p == 2: ax.set_zlabel('Volume (cm³)')
+            if p == 3 or p == 4 or p == 6: ax.set_zlabel('Perdas (W)')
+            if p == 5: ax.set_zlabel('Temperatura (°C)')
+
+            ax.xaxis.set_major_locator(MaxNLocator(5))
+            ax.yaxis.set_major_locator(MaxNLocator(6))
+            ax.zaxis.set_major_locator(MaxNLocator(5))
+
+            fig.tight_layout()
+
+            if p == 2:
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Volume\MPP.pdf', dpi=600)
+
+            if p == 3:
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasNucleo\MPP.pdf', dpi=600)
+
+            if p == 4:
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\PerdasCobre\MPP.pdf', dpi=600)
+
+            if p == 5:
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Temperatura\MPP.pdf', dpi=600)
+
+            if p == 6:
+                if m == 0: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\KMu.pdf', dpi=600)
+                if m == 1: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\KMM.pdf', dpi=600)
+                if m == 2: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\KMH.pdf', dpi=600)
+                if m == 3: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\Xf.pdf', dpi=600)
+                if m == 4: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\HF.pdf', dpi=600)
+                if m == 5: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\EDG.pdf', dpi=600)
+                if m == 6: plt.savefig(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\Figuras\Perdas\MPP.pdf', dpi=600)
+
+print("\nProjetos totais: ")
+print(n_kmu, n_kmm, n_khf, n_xf, n_hf, n_edg, n_mpp)
+print("\nProjetos selecionados: \n")
+print(pn_kmu, pn_kmm, pn_khf, pn_xf, pn_hf, pn_edg, pn_mpp)

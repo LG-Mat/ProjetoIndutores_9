@@ -22,7 +22,7 @@ D = 0.5
 temp_amb = 20
 J = 450  # Densidade de corrente no condutor
 # ===================================================================
-
+# Cria as matrizes onde serão armazenadas as informações para o plot dos gráficos
 dados_plot_KMu = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
 dados_plot_KMu = np.delete(dados_plot_KMu, 0, 0)
 dados_plot_KMM = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
@@ -37,7 +37,7 @@ dados_plot_EDG = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
 dados_plot_EDG = np.delete(dados_plot_EDG, 0, 0)
 dados_plot_MPP = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0]])
 dados_plot_MPP = np.delete(dados_plot_MPP, 0, 0)
-
+# Variável para determinar a quantidade de projetos realizados para cada material
 n_kmu = 0
 n_kmm = 0
 n_khf = 0
@@ -45,7 +45,8 @@ n_xf = 0
 n_hf = 0
 n_edg = 0
 n_mpp = 0
-
+# Variável para determinar a quantidade de projetos selecionados para cada material, idealmente igual à quantidade
+# de pontos de operação
 pn_kmu = 0
 pn_kmm = 0
 pn_khf = 0
@@ -54,11 +55,9 @@ pn_hf = 0
 pn_edg = 0
 pn_mpp = 0
 
-awg_indice = 0
-
-#df = pd.read_csv(
-#    r'C:\Users\User\PycharmProjects\Projeto_Indutores\csv\DadosIndutor - Toroids - Copia (alterado) 01-04.csv')
-#df_awg = pd.read_csv(r'C:\Users\User\PycharmProjects\Projeto_Indutores\csv\Dados AWG.csv')
+awg_indice = 0 # Inicia a variável para seleção do condutor utilizado no projeto
+# TODO: DECIDIR SE MANTENHO COMENTADO O COEFICIENTE DE EMPACOTAMENTO CIRCULAR
+# Carrega o banco de dados de núcleos, condutores e coeficientes de empacotamento circular
 df = pd.read_csv(
     r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\DadosIndutor - Toroids - Copia (alterado) 01-04.csv')
 df_awg = pd.read_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Projeto_Indutores\CSV\Dados AWG.csv')
@@ -67,6 +66,8 @@ df_radius = pd.read_csv(r'C:\Users\lgmat\PycharmProjects\Projeto_Indutores\Proje
 for f in range(f_min, f_max, f_step):  # Varredura na frequência
     print('Valor da frequência atual: ', f)
     for r in range(ripple_i_min, ripple_i_max, ripple_step):  # Varredura no ripple de corrente
+        # Cria as matrizes onde serão armazenados os dados dos projetos de cada material
+        # e exclui o primeiro componente para não ter valores nulos
         matriz_selecao = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
         matriz_selecao = np.delete(matriz_selecao, 0, 0)
         matriz_KMu = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
@@ -177,8 +178,6 @@ for f in range(f_min, f_max, f_step):  # Varredura na frequência
                                                  df_awg.values[awg_indice][3], comprimento_medio_da_espira, df.values[i][21])
 
                     perdas_cobre = perdas_cobre + perdas_cobre_CA
-
-                    # TODO: Adicionar a resistência CA do condutor
 
                     # Temperatura no núcleo =================================================
                     area_externa = 2*np.pi*((df.values[i][20]**2 - df.values[i][21]**2)/4 + df.values[i][22]*n_empilhamento*((df.values[i][21]+df.values[i][22])/2)) # [mm²]

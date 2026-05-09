@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import signal
+from math import ceil
 import matplotlib.pyplot as plt
 
 def PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PFT, d_cond, comprimento_medio_da_espira, ID):
@@ -41,15 +42,23 @@ def PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PF
             porosidade = 1 / PF
 
             # Perdas CA
-            N_camadas = 1
+            '''N_camadas = 1
             circ_int = 2 * np.pi * ID / 2
-            comp_diam_cond = diam_cond_paralelo * N_espiras
+            comp_diam_cond = diam_cond_paralelo*10 * N_espiras
+
+            N_cond_camadas = np.pi*ID/(diam_cond_paralelo*10)
+            N_camadas = N_espiras/N_cond_camadas
+            N_camadas = ceil(N_camadas)
 
             while comp_diam_cond > circ_int:
                 circ_int = 2 * np.pi * (ID - diam_cond_paralelo * N_camadas / 2) / 2
                 if diam_cond_paralelo < circ_int:
                     N_camadas = N_camadas + 1
-                comp_diam_cond = comp_diam_cond - circ_int
+                comp_diam_cond = comp_diam_cond - circ_int'''
+
+            N_cond_camadas = np.pi * ID / (diam_cond_paralelo * 10)
+            N_camadas = N_espiras / N_cond_camadas
+            N_camadas = ceil(N_camadas)
 
             if freq_harmonico != 0:
                 # ρ: [Ωm] | μo = 1.256637 μH/m | f: Hz
@@ -92,9 +101,9 @@ def PerdasCuCA(N_espiras, N_paralelo, f, corrente_cc, var_corrente, J, D, RF, PF
     return soma_P_CA
 
 if __name__ == '__main__':
-    PerdasCuCA(53, 13, 30000, 5, 5.0, 450, 0.2, 1.26, 0.2360679775, 0.0452, 16.714000000000002, 77.19)
-    PerdasCuCA(55, 16, 40000, 5, 0.5, 450, 0.2, 1.26, 0.2166474292, 0.0409, 14.138, 24.0)
+    #PerdasCuCA(53, 13, 50000, 5, 5.0, 450, 0.2, 1.26, 0.2360679775, 0.0452, 16.714000000000002, 77.19)
+    #PerdasCuCA(55, 16, 40000, 5, 0.5, 450, 0.2, 1.26, 0.2166474292, 0.0409, 14.138, 24.0)
 
-    P_CA = PerdasCuCA(92, 40, 20000, 5, 1.5, 450, 0.5, 1.29,
+    P_CA = PerdasCuCA(92, 40, 50000, 2, 2*0.2, 450, 0.5, 1.29,
                       0.1403736042, 0.0267, 6.436, 22.56)
     print(P_CA)
